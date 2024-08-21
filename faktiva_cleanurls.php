@@ -26,7 +26,7 @@ if (!defined('_PS_VERSION_')) {
 // Set true to enable debugging
 define('FKV_DEBUG', false);
 
-if (version_compare(phpversion(), '5.3.0', '>=')) { // Namespaces support is required
+if (version_compare(phpversion(), '7.3.0', '>=')) { // Namespaces support is required
     include_once __DIR__.'/tools/debug.php';
 }
 
