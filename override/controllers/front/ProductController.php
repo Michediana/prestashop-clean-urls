@@ -18,42 +18,30 @@
  * @source   https://github.com/faktiva/prestashop-clean-urls
  */
 
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
-use PrestaShop\PrestaShop\Core\Routing\Router;
-
 class ProductController extends ProductControllerCore
 {
     public function init()
     {
-        $context = Context::getContext();
-        $product_rewrite = Tools::getValue('product_rewrite');
-
-        if ($product_rewrite) {
+        if ($product_rewrite = Tools::getValue('product_rewrite')) {
             $url_id_pattern = '/.*?([0-9]+)\-([a-zA-Z0-9-]*)(\.html)?/';
-            $lang_id = (int) $context->language->id;
+            $lang_id = (int) Context::getContext()->language->id;
 
-            $sql = new DbQuery();
-            $sql->select('p.`id_product`')
-                ->from('product_lang', 'p')
-                ->where('p.`link_rewrite` = \''.pSQL(str_replace('.html', '', $product_rewrite)).'\'')
-                ->where('p.`id_lang` = '.(int) $lang_id);
-
+            $sql = 'SELECT `id_product`
+                FROM `'._DB_PREFIX_.'product_lang`
+                WHERE `link_rewrite` = \''.pSQL(str_replace('.html', '', $product_rewrite)).'\' AND `id_lang` = '.$lang_id;
             if (Shop::isFeatureActive() && Shop::getContext() == Shop::CONTEXT_SHOP) {
-                $sql->where('p.`id_shop` = '.(int) Shop::getContextShopID());
+                $sql .= ' AND `id_shop` = '.(int) Shop::getContextShopID();
             }
 
             $id_product = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
             if ($id_product > 0) {
                 $_GET['id_product'] = $id_product;
             } elseif (preg_match($url_id_pattern, $this->request_uri, $url_parts)) {
-                $sql = new DbQuery();
-                $sql->select('p.`id_product`')
-                    ->from('product_lang', 'p')
-                    ->where('p.`id_product` = \''.pSQL($url_parts[1]).'\'')
-                    ->where('p.`id_lang` = '.(int) $lang_id);
-
+                $sql = 'SELECT `id_product`
+                    FROM `'._DB_PREFIX_.'product_lang`
+                    WHERE `id_product` = \''.pSQL($url_parts[1]).'\' AND `id_lang` = '.$lang_id;
                 if (Shop::isFeatureActive() && Shop::getContext() == Shop::CONTEXT_SHOP) {
-                    $sql->where('p.`id_shop` = '.(int) Shop::getContextShopID());
+                    $sql .= ' AND `id_shop` = '.(int) Shop::getContextShopID();
                 }
 
                 $id_product = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);

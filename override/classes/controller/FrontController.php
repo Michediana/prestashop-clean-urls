@@ -31,14 +31,14 @@ class FrontController extends FrontControllerCore
     {
         $_unfiltered_GET = $_GET;
 
-        // hack original behavior on canonicalRedirection: remove *_rewrite from _GET
+        // hack original behavior on cananocalRedirection: remove *_rewrite from _GET
         $_GET = array_filter($_GET, function ($v) {
             return '_rewrite' === substr($v, -8);
         });
 
         parent::canonicalRedirection($canonical_url);
 
-        // restore original _GET
+        //restore original _GET
         $_GET = $_unfiltered_GET;
     }
 }

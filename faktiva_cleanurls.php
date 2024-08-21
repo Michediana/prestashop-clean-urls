@@ -16,7 +16,6 @@
  * @author   Emiliano 'AlberT' Gabrielli <albert@faktiva.com>
  * @license  https://creativecommons.org/licenses/by-sa/4.0/  CC-BY-SA-4.0
  * @source   https://github.com/faktiva/prestashop-clean-urls
- * @source https://github.com/juferlover/prestashop-clean-urls/tree/Prestashop-1.7-Update
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -26,48 +25,55 @@ if (!defined('_PS_VERSION_')) {
 // Set true to enable debugging
 define('FKV_DEBUG', false);
 
-if (version_compare(phpversion(), '7.3.0', '>=')) { // Namespaces support is required
+if (version_compare(phpversion(), '5.3.0', '>=')) { // Namespaces support is required
     include_once __DIR__.'/tools/debug.php';
 }
 
-class FaktivaCleanUrls extends Module
+class faktiva_CleanUrls extends Module
 {
     public function __construct()
     {
         $this->name = 'faktiva_cleanurls';
         $this->tab = 'seo';
-        $this->version = '1.2.4';
+        $this->version = '1.2.3';
         $this->author = 'Faktiva';
         $this->need_instance = 0;
+        $this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6.99');
+        $this->bootstrap = true;
 
         parent::__construct();
 
         $this->displayName = $this->l('Faktiva Clean URLs');
-        $this->description = $this->l('This override-Module allows you to remove URL IDs.');
+        $this->description = $this->l('This override-module allows you to remove URL ID\'s.');
+
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall "Faktiva Clean URLs" module?');
     }
 
     public function getContent()
     {
-        $output = '';
+        $output = '<p class="info">'
+            .$this->l('On some versions you could have to disable Cache, save, open your shop home page, than go back and enable it:').'<br><br>'
+            .sprintf('%s -> %s -> %s', $this->l('Advanced Parameters'), $this->l('Performance'), $this->l('Clear Smarty cache')).'<br>'
+            .sprintf('%s -> %s -> %s -> %s', $this->l('Preferences'), $this->l('SEO and URLs'), $this->l('Set user-friendly URL off'), $this->l('Save')).'<br>'
+            .sprintf('%s -> %s -> %s -> %s', $this->l('Preferences'), $this->l('SEO and URLs'), $this->l('Set user-friendly URL on'), $this->l('Save')).'<br>'
+            .'</p>';
 
-        $sql = 'SELECT `id_product`, `link_rewrite`, `id_lang`, `name`
-                FROM `'._DB_PREFIX_.'product_lang`
-                WHERE `link_rewrite`
-                IN (SELECT `link_rewrite` FROM `'._DB_PREFIX_.'product_lang`
-                GROUP BY `link_rewrite`, `id_lang`
-                HAVING count(`link_rewrite`) > 1)';
+        $sql = 'SELECT * FROM `'._DB_PREFIX_.'product_lang`
+            WHERE `link_rewrite`
+            IN (SELECT `link_rewrite` FROM `'._DB_PREFIX_.'product_lang`
+            GROUP BY `link_rewrite`, `id_lang`
+            HAVING count(`link_rewrite`) > 1)';
         if (Shop::isFeatureActive() && Shop::getContext() == Shop::CONTEXT_SHOP) {
             $sql .= ' AND `id_shop` = '.(int) Shop::getContextShopID();
         }
 
-        if ($res = Db::getInstance()->executeS($sql)) {
+        if ($res = Db::getInstance()->ExecuteS($sql)) {
             $err = $this->l('You need to fix duplicate URL entries:').'<br>';
             foreach ($res as $row) {
-                $lang = Language::getLanguage($row['id_lang']);
+                $lang = $this->context->language->getLanguage($row['id_lang']);
                 $err .= $row['name'].' ('.$row['id_product'].') - '.$row['link_rewrite'].'<br>';
 
-                $shop = Shop::getShop($row['id_shop']);
+                $shop = $this->context->shop->getShop($lang['id_shop']);
                 $err .= $this->l('Language: ').$lang['name'].'<br>'.$this->l('Shop: ').$shop['name'].'<br><br>';
             }
             $output .= $this->displayWarning($err);
@@ -81,11 +87,11 @@ class FaktivaCleanUrls extends Module
     public function install()
     {
         // add link_rewrite as index to improve search
-        // foreach (array('category_lang', 'cms_category_lang', 'cms_lang', 'product_lang') as $tab) {
-        //     if (!Db::getInstance()->executeS('SHOW INDEX FROM `'._DB_PREFIX_.$tab.'` WHERE Key_name = \'link_rewrite\'')) {
-        //         Db::getInstance()->execute('ALTER TABLE `'._DB_PREFIX_.$tab.'` ADD INDEX ( `link_rewrite` )');
-        //     }
-        // }
+        foreach (array('category_lang', 'cms_category_lang', 'cms_lang', 'product_lang') as $tab) {
+            if (!Db::getInstance()->ExecuteS('SHOW INDEX FROM `'._DB_PREFIX_.$tab.'` WHERE Key_name = \'link_rewrite\'')) {
+                Db::getInstance()->Execute('ALTER TABLE `'._DB_PREFIX_.$tab.'` ADD INDEX ( `link_rewrite` )');
+            }
+        }
 
         if (!parent::install()) {
             return false;
