@@ -1,5 +1,0 @@
-.*                  export-ignore
-/composer.*         export-ignore
-*.zip               export-ignore
-*.tar               export-ignore
-/*.jpg              export-ignore

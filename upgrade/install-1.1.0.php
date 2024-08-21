@@ -27,7 +27,7 @@ function upgrade_module_1_1_0($module)
     $old_module = 'zzcleanurls';
 
     if (Module::isInstalled($old_module)) {
-        Module::disableByName($this->name);
+        Module::disableByName($module->name);
 
         die(Tools::displayError('You must first un-install module "ZiZuu Clean URLs"'));
     }

@@ -11,12 +11,15 @@
  *
  * DISCLAIMER
  * This code is provided as is without any warranty.
- * No promise of being safe or secure
+ * No promise of being safe secure
  *
- * @author   Emiliano 'AlberT' Gabrielli <albert@faktiva.com>
+ * @autor   Emiliano 'AlberT' Gabrielli <albert@faktiva.com>
  * @license  https://creativecommons.org/licenses/by-sa/4.0/  CC-BY-SA-4.0
  * @source   https://github.com/faktiva/prestashop-clean-urls
  */
+
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+use PrestaShop\PrestaShop\Core\Routing\Router;
 
 class Link extends LinkCore
 {
@@ -59,22 +62,11 @@ class Link extends LinkCore
             $params['selected_filters'] = $selected_filters;
         }
 
+        /** @var Router $router */
+        $router = SymfonyContainer::getInstance()->get('router');
         $dispatcher = Dispatcher::getInstance();
 
-        if ($dispatcher->hasKeyword('category_rule', $id_lang, 'categories')) {
-            // Retrieve all parent categories
-            $p_cats = array();
-            foreach ($category->getParentsCategories($id_lang) as $p_cat) {
-                // remove root and current category from the URL
-                if (!in_array($p_cat['id_category'], array_merge(self::$category_disable_rewrite, array($category->id)))) {
-                    $p_cats[] = $p_cat['link_rewrite'];
-                }
-            }
-            // add the URL slashes among categories, in reverse order
-            $params['categories'] = implode('/', array_reverse($p_cats));
-        }
-
-        return $url.$dispatcher->createUrl($rule, $id_lang, $params, $this->allow, '', $id_shop);
+        return $router->generate($rule, $params, Router::ABSOLUTE_URL);
     }
 
     /**
@@ -86,6 +78,8 @@ class Link extends LinkCore
      * @param bool   $sort       Show sort attribute
      * @param bool   $pagination Show page number attribute
      * @param bool   $array      If false return an url, if true return an array
+     *
+     * @return array|string
      */
     public function getPaginationLink($type, $id_object, $nb = false, $sort = false, $pagination = false, $array = false)
     {
@@ -135,24 +129,10 @@ class Link extends LinkCore
             }
         }
 
-        if (!$array) {
-            if (count($vars)) {
-                return $url.(!strstr($url, '?') && ($this->allow == 1 || $url == $this->url) ? '?' : '&').http_build_query($vars, '', '&');
-            } else {
-                return $url;
-            }
+        if ($array) {
+            return array('url' => $url, 'params' => $vars);
         }
 
-        $vars['requestUrl'] = $url;
-
-        if ($type && $id_object) {
-            $vars['id_'.$type] = (is_object($id_object) ? (int) $id_object->id : (int) $id_object);
-        }
-
-        if (!$this->allow == 1) {
-            $vars['controller'] = Dispatcher::getInstance()->getController();
-        }
-
-        return $vars;
+        return $url.(count($vars) ? '?'.http_build_query($vars) : '');
     }
 }

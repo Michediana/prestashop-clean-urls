@@ -380,7 +380,7 @@ class Dispatcher extends DispatcherCore
         if (Shop::isFeatureActive() && Shop::getContext() == Shop::CONTEXT_SHOP) {
             $sql .= ' AND `id_shop` = '.(int) Shop::getContextShopID();
         }
-        $id_product = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+        $id_product = (int) Db::getInstance()->executeS($sql);
 
         return $id_product > 0;
     }
@@ -409,7 +409,7 @@ class Dispatcher extends DispatcherCore
             $sql .= ' AND `id_shop` = '.(int) Shop::getContextShopID();
         }
 
-        $id_category = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+        $id_category = (int) Db::getInstance()->executeS($sql);
 
         return $id_category > 0;
     }
@@ -439,7 +439,7 @@ class Dispatcher extends DispatcherCore
             $sql .= ' AND s.`id_shop` = '.(int) Shop::getContextShopID();
         }
 
-        $id_cms = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+        $id_cms = (int) Db::getInstance()->executeS($sql);
 
         return $id_cms > 0;
     }
@@ -474,7 +474,7 @@ class Dispatcher extends DispatcherCore
             $sql .= ' AND s.`id_shop` = '.(int) Shop::getContextShopID();
         }
 
-        $id_cms_cat = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+        $id_cms_cat = (int) Db::getInstance()->executeS($sql);
 
         return $id_cms_cat > 0;
     }
@@ -494,7 +494,7 @@ class Dispatcher extends DispatcherCore
         preg_match($regexp, $short_link, $kw);
         if (empty($kw['manufacturer_rewrite'])) {
             if (0 === strpos('/'.$route['rule'], $short_link)) {
-                //no link_rewrite, but uri starts with the link -> manufactures' list
+                //no link_rewrite, but uri starts with the link -> manufacturers' list
                 return true;
             }
 
@@ -511,7 +511,7 @@ class Dispatcher extends DispatcherCore
             $sql .= ' AND s.`id_shop` = '.(int) Shop::getContextShopID();
         }
 
-        $id_manufacturer = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+        $id_manufacturer = (int) Db::getInstance()->getValue($sql);
 
         return $id_manufacturer > 0;
     }
@@ -548,7 +548,7 @@ class Dispatcher extends DispatcherCore
             $sql .= ' AND s.`id_shop` = '.(int) Shop::getContextShopID();
         }
 
-        $id_supplier = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+        $id_supplier = (int) Db::getInstance()->getValue($sql);
 
         return $id_supplier > 0;
     }

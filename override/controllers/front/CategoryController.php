@@ -18,15 +18,26 @@
  * @source   https://github.com/faktiva/prestashop-clean-urls
  */
 
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+use PrestaShop\PrestaShop\Core\Addon\Module\ModuleManagerBuilder;
+use PrestaShop\PrestaShop\Core\Module\ModuleRepository;
+
 class CategoryController extends CategoryControllerCore
 {
     public function init()
     {
-        if ($category_rewrite = Tools::getValue('category_rewrite')) {
-            $sql = 'SELECT `id_category` FROM `'._DB_PREFIX_.'category_lang`
-                WHERE `link_rewrite` = \''.pSQL(str_replace('.html', '', $category_rewrite)).'\' AND `id_lang` = '.Context::getContext()->language->id;
+        $context = Context::getContext();
+        $category_rewrite = Tools::getValue('category_rewrite');
+
+        if ($category_rewrite) {
+            $sql = new DbQuery();
+            $sql->select('id_category')
+                ->from('category_lang')
+                ->where('link_rewrite = \''.pSQL(str_replace('.html', '', $category_rewrite)).'\'')
+                ->where('id_lang = '.(int) $context->language->id);
+
             if (Shop::isFeatureActive() && Shop::getContext() == Shop::CONTEXT_SHOP) {
-                $sql .= ' AND `id_shop` = '.(int) Shop::getContextShopID();
+                $sql->where('id_shop = '.(int) Shop::getContextShopID());
             }
 
             $id_category = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
