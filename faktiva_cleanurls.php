@@ -81,11 +81,11 @@ class FaktivaCleanUrls extends Module
     public function install()
     {
         // add link_rewrite as index to improve search
-        foreach (array('category_lang', 'cms_category_lang', 'cms_lang', 'product_lang') as $tab) {
-            if (!Db::getInstance()->executeS('SHOW INDEX FROM `'._DB_PREFIX_.$tab.'` WHERE Key_name = \'link_rewrite\'')) {
-                Db::getInstance()->execute('ALTER TABLE `'._DB_PREFIX_.$tab.'` ADD INDEX ( `link_rewrite` )');
-            }
-        }
+        // foreach (array('category_lang', 'cms_category_lang', 'cms_lang', 'product_lang') as $tab) {
+        //     if (!Db::getInstance()->executeS('SHOW INDEX FROM `'._DB_PREFIX_.$tab.'` WHERE Key_name = \'link_rewrite\'')) {
+        //         Db::getInstance()->execute('ALTER TABLE `'._DB_PREFIX_.$tab.'` ADD INDEX ( `link_rewrite` )');
+        //     }
+        // }
 
         if (!parent::install()) {
             return false;
